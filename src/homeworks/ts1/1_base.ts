@@ -15,7 +15,12 @@ export const round = (value: number, accuracy = 2): number => {
 const transformRegexp =
   /(matrix\(-?\d+(\.\d+)?, -?\d+(\.\d+)?, -?\d+(\.\d+)?, -?\d+(\.\d+)?, )(-?\d+(\.\d+)?), (-?\d+(\.\d+)?)\)/;
 
-export const getTransformFromCss = (transformCssString: string): { x: number; y: number } => {
+export type Point = {
+  x: number;
+  y: number;
+};
+
+export const getTransformFromCss = (transformCssString: string): Point => {
   const data: RegExpMatchArray = transformCssString.match(transformRegexp);
   if (!data) return { x: 0, y: 0 };
   return {
@@ -33,7 +38,7 @@ export const getContrastType = (contrastValue: number): string => (contrastValue
 export const shortColorRegExp = /^#[0-9a-f]{3}$/i;
 export const longColorRegExp = /^#[0-9a-f]{6}$/i;
 
-export const checkColor = (color: string): void => {
+export const checkColor = (color: string): void | never => {
   if (!longColorRegExp.test(color) && !shortColorRegExp.test(color)) throw new Error(`invalid hex color: ${color}`);
 };
 
@@ -51,21 +56,34 @@ export const hex2rgb = (color: string): number[] => {
   return [red, green, blue];
 };
 
-export const getNumberedArray = (arr: unknown[]): { value: unknown; number: number }[] =>
-  arr.map((value, number) => ({ value, number }));
+export type ValueWithNumber<T> = {
+  value: T;
+  number: number;
+};
 
-export const toStringArray = (arr: { value: unknown; number: number }[]): string[] =>
-  arr.map(({ value, number }) => `${value}_${number}`);
+export function getNumberedArray<T>(arr: T[]): ValueWithNumber<T>[] {
+  return arr.map((value, number) => ({ value, number }));
+}
 
-export class Customer {
-  id?: string;
+export function toStringArray<T>(arr: ValueWithNumber<T>[]): string[] {
+  return arr.map(({ value, number }) => `${value}_${number}`);
+}
+
+export type CustomerData = {
   name: string;
   age: number;
   isSubscribed: boolean;
-}
+};
 
-export const transformCustomers = (customers: Customer[]): { [id: string]: Customer } => {
-  return customers.reduce((acc: { [id: string]: Customer }, customer: Customer) => {
+export type Customer = {
+  id: string;
+  name: string;
+  age: number;
+  isSubscribed: boolean;
+};
+
+export const transformCustomers = (customers: Customer[]): { [id: string]: CustomerData } => {
+  return customers.reduce((acc: { [id: string]: CustomerData }, customer: Customer) => {
     acc[customer.id] = { name: customer.name, age: customer.age, isSubscribed: customer.isSubscribed };
     return acc;
   }, {});
